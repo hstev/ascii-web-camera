@@ -1,0 +1,60 @@
+name: CI y despliegue
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  # No cancelar un despliegue a medias; en PRs sí se puede.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: Verificar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+
+      - name: Sintaxis de JavaScript
+        run: node --check app.js
+
+      - name: Archivos referenciados existen
+        run: |
+          for f in $(grep -oE '(src|href)="[^":#]+\.(js|css)"' index.html | cut -d'"' -f2); do
+            test -f "$f" || { echo "::error file=index.html::Falta $f"; exit 1; }
+          done
+
+      - name: Preparar sitio
+        run: |
+          mkdir _site
+          cp index.html styles.css app.js _site/
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    name: Publicar en GitHub Pages
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v6
+      - id: deployment
+        uses: actions/deploy-pages@v5
