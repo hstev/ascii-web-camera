@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#020a04">
-  <meta name="description" content="Cámara en tiempo real convertida a arte ASCII, con paletas estilo Matrix. Toma fotos y compártelas.">
+  <meta name="description" content="Your camera rendered as live ASCII art, with Matrix-style palettes. Take photos and share them.">
   <title>ASCII Cam</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23020a04'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' font-weight='700' text-anchor='middle' fill='%2300ff41'%3E@%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,106 +14,105 @@
   <script type="module" src="app.js"></script>
 </head>
 <body>
-  <canvas id="screen" role="img" aria-label="Vista de la cámara convertida a ASCII"></canvas>
+  <canvas id="screen" role="img" data-i18n-aria="screen" aria-label="Camera view rendered as ASCII"></canvas>
   <video id="video" playsinline muted aria-hidden="true"></video>
   <div class="crt" aria-hidden="true"></div>
   <div class="flash" id="flash" aria-hidden="true"></div>
 
   <header class="topbar">
     <div class="brand" aria-label="ASCII Cam">ASCII<span>//</span>CAM</div>
-    <div class="status" id="status" data-state="idle">
-      <span class="dot" aria-hidden="true"></span>
-      <span id="status-text">SIN SEÑAL</span>
+    <div class="lang" role="group" data-i18n-aria="language" aria-label="Language">
+      <button type="button" data-lang="en" lang="en" aria-label="English">EN</button>
+      <button type="button" data-lang="es" lang="es" aria-label="Español">ES</button>
     </div>
   </header>
 
   <section class="gate" id="gate" aria-labelledby="gate-title">
-    <p class="kicker" id="gate-kicker">CH 00 · SIN SEÑAL</p>
-    <h1 id="gate-title">Mírate en código.</h1>
-    <p id="gate-msg">Activa la cámara para convertir lo que ves en ASCII en tiempo real. Nada sale de tu dispositivo.</p>
+    <h1 id="gate-title"></h1>
+    <p id="gate-msg"></p>
     <button type="button" class="btn primary" id="enable">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>
-      Activar cámara
+      <span id="enable-label"></span>
     </button>
   </section>
 
-  <nav class="dock" aria-label="Controles">
-    <button type="button" class="icon-btn" popovertarget="settings" aria-label="Ajustes">
+  <nav class="dock" data-i18n-aria="controls" aria-label="Controls">
+    <button type="button" class="icon-btn" popovertarget="settings" data-i18n-aria="settings" aria-label="Settings">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
     </button>
-    <button type="button" class="shutter" id="shutter" aria-label="Tomar foto (barra espaciadora)">
+    <button type="button" class="shutter" id="shutter" data-i18n-aria="capture" aria-label="Take photo (Space bar)">
       <span aria-hidden="true"></span>
     </button>
-    <button type="button" class="icon-btn" id="flip" aria-label="Cambiar cámara" disabled>
+    <button type="button" class="icon-btn" id="flip" data-i18n-aria="flip" aria-label="Switch camera" disabled>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.6-4.5M4 4v3h3M4 13a8 8 0 0 0 14.6 4.5M20 20v-3h-3"/></svg>
     </button>
   </nav>
 
   <dialog id="settings" popover aria-labelledby="settings-title" class="panel">
     <div class="panel-head">
-      <h2 id="settings-title">Ajustes</h2>
-      <button type="button" class="icon-btn small" popovertarget="settings" popovertargetaction="hide" aria-label="Cerrar ajustes">
+      <h2 id="settings-title" data-i18n="settings">Settings</h2>
+      <button type="button" class="icon-btn small" popovertarget="settings" popovertargetaction="hide" data-i18n-aria="closeSettings" aria-label="Close settings">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
 
     <fieldset>
-      <legend>Paleta</legend>
+      <legend data-i18n="palette">Palette</legend>
       <div class="swatches" id="swatches"></div>
       <div class="pickers">
-        <label>Fondo <input type="color" id="bg-color"></label>
-        <label>Caracteres <input type="color" id="fg-color"></label>
+        <label><span data-i18n="background">Background</span> <input type="color" id="bg-color"></label>
+        <label><span data-i18n="foreground">Characters</span> <input type="color" id="fg-color"></label>
       </div>
     </fieldset>
 
-    <label class="field">Caracteres
+    <label class="field"><span data-i18n="charset">Characters</span>
       <select id="charset">
-        <option value="matrix">Matrix (katakana)</option>
-        <option value="clasico">Clásico</option>
-        <option value="detallado">Detallado</option>
-        <option value="bloques">Bloques</option>
-        <option value="binario">Binario</option>
+        <option value="matrix" data-i18n="cs_matrix">Matrix (katakana)</option>
+        <option value="classic" data-i18n="cs_classic">Classic</option>
+        <option value="detailed" data-i18n="cs_detailed">Detailed</option>
+        <option value="blocks" data-i18n="cs_blocks">Blocks</option>
+        <option value="binary" data-i18n="cs_binary">Binary</option>
       </select>
     </label>
 
-    <label class="field">Densidad <output id="density-out"></output>
+    <label class="field"><span data-i18n="density">Density</span> <output id="density-out"></output>
       <input type="range" id="density" min="40" max="220" step="4">
     </label>
 
-    <label class="field">Contraste <output id="contrast-out"></output>
+    <label class="field"><span data-i18n="contrast">Contrast</span> <output id="contrast-out"></output>
       <input type="range" id="contrast" min="0.5" max="2.5" step="0.1">
     </label>
 
     <div class="toggles">
-      <label class="toggle"><input type="checkbox" id="rain" switch> Lluvia digital</label>
-      <label class="toggle"><input type="checkbox" id="crt" switch> Efecto CRT</label>
-      <label class="toggle"><input type="checkbox" id="invert" switch> Invertir</label>
-      <label class="toggle"><input type="checkbox" id="mirror" switch> Espejo</label>
+      <label class="toggle"><input type="checkbox" id="rain" switch> <span data-i18n="rain">Digital rain</span></label>
+      <label class="toggle"><input type="checkbox" id="crt" switch> <span data-i18n="crt">CRT effect</span></label>
+      <label class="toggle"><input type="checkbox" id="invert" switch> <span data-i18n="invert">Invert</span></label>
+      <label class="toggle"><input type="checkbox" id="mirror" switch> <span data-i18n="mirror">Mirror</span></label>
     </div>
   </dialog>
 
   <dialog id="photo" closedby="any" aria-labelledby="photo-title" class="panel photo">
     <div class="panel-head">
-      <h2 id="photo-title">Captura</h2>
+      <h2 id="photo-title" data-i18n="photo">Photo</h2>
       <form method="dialog">
-        <button class="icon-btn small" aria-label="Cerrar">
+        <button class="icon-btn small" data-i18n-aria="close" aria-label="Close">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </form>
     </div>
-    <img id="photo-img" alt="Foto capturada en arte ASCII">
+    <img id="photo-img" data-i18n-alt="photoAlt" alt="Captured ASCII photo">
     <div class="actions">
       <button type="button" class="btn primary" id="share" autofocus>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>
-        Compartir
+        <span data-i18n="share">Share</span>
       </button>
       <button type="button" class="btn" id="download">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
-        Descargar
+        <span data-i18n="download">Download</span>
       </button>
       <button type="button" class="btn" id="copy-text">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
-        Copiar texto
+        <span data-i18n="copyText">Copy text</span>
       </button>
     </div>
   </dialog>
